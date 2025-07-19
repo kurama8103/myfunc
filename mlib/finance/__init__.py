@@ -9,5 +9,6 @@ from . import (
     quantstats_html,
     stochastic,
     TimeSeries,
+    kelly,
 )
 

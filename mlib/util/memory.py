@@ -2,28 +2,6 @@ import numpy as np
 import pandas as pd
 import sys
 
-
-def variable_memory(x=dir()):
-    mem_cols = ["Variable Name", "Memory"]
-    memory_df = pd.DataFrame(columns=mem_cols)
-
-    for var_name in x:
-        if not var_name.startswith("_"):
-            memory_df = pd.concat(
-                [
-                    memory_df,
-                    pd.DataFrame(
-                        [[var_name, sys.getsizeof(eval(var_name))]], columns=mem_cols
-                    ),
-                ]
-            )
-
-    memory_df = memory_df.sort_values(by="Memory", ascending=False).reset_index(
-        drop=True
-    )
-    return memory_df
-
-
 def reduce_mem_usage(df):
     """iterate through all the columns of a dataframe and modify the data type
     to reduce memory usage.
@@ -67,3 +45,29 @@ def reduce_mem_usage(df):
     print("Decreased by {:.1f}%".format(100 * (start_mem - end_mem) / start_mem))
 
     return df
+
+def deep_getsizeof(obj, seen=None):
+    """オブジェクトのサイズ を再帰的に計測"""
+    if seen is None:
+        seen = set()
+    obj_id = id(obj)
+    if obj_id in seen:  # 循環参照を防ぐ
+        return 0
+    seen.add(obj_id)
+    size = sys.getsizeof(obj)
+    if isinstance(obj, dict):
+        size += sum(deep_getsizeof(v, seen) for v in obj.values())
+        size += sum(deep_getsizeof(k, seen) for k in obj.keys())
+    elif isinstance(obj, (list, tuple, set)):
+        size += sum(deep_getsizeof(i, seen) for i in obj)
+    return size
+
+
+def variable_memory(x=locals(), unit=1e6):
+    memory_sizes = {
+        key: deep_getsizeof(value)
+        for key, value in x.items()
+        if (key[0] != "_") and key not in ("In", "Out")
+    }
+    return pd.Series(memory_sizes).sort_values(ascending=False) / unit
+

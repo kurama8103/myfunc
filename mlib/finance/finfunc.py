@@ -91,6 +91,13 @@ def hurst(x, window: int = 100) -> tuple:
     return H, 10**C, [windows, RS]
 
 
+def hurst2(x):
+    lags = range(2, 100)
+    tau = [np.sqrt(np.std((np.array(x[lag:]) - np.array(x[:-lag])))) for lag in lags]
+    poly = np.polyfit(np.log(lags), np.log(tau), 1)
+    return poly[0] * 2
+
+
 def high_water_mark(return_index: pd.Series, window: int = None):
     if window is None:
         window = len(return_index)
@@ -252,23 +259,3 @@ def sklearn_predict_regression(model, list_feature_target, n_round: int = 2):
 
 def dynamic_time_warping(x, y):
     return fastdtw(x, y, dist=euclidean)
-
-
-def kelly_criterion_1d(probability, e_return, limit: list = None):
-    """
-    :param p: the probability of a win.
-    :param b: the proportion of the bet gained with a win.
-    :return: the fraction of the current bankroll to wager.
-    """
-    weight = np.where(e_return > 0, (probability * (e_return + 1) - 1) / e_return, 0)
-    if limit:
-        weight = np.where(weight > limit[1], limit[1], weight)
-        weight = np.where(weight < limit[0], limit[0], weight)
-    return weight
-
-
-def kelly_criterion(mean_returns, cov_matrix):
-    inv_cov_matrix = np.linalg.inv(cov_matrix)
-    optimal_weights = np.dot(inv_cov_matrix, mean_returns)
-    optimal_weights /= np.sum(optimal_weights)
-    return optimal_weights

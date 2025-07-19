@@ -4,11 +4,13 @@ import csv
 import io
 import pandas as pd
 import numpy as np
+import sys
 from sklearn.model_selection import train_test_split
 from numpy import set_printoptions
 import matplotlib.pyplot as plt
 from seaborn import set_style
 import japanize_matplotlib
+import requests
 
 
 def pref():
@@ -134,3 +136,29 @@ def class_to_csv(class_):
     writer.writeheader()
     writer.writerow(class_.__dict__)
     return f
+
+
+def get_dtypes(df: pd.DataFrame) -> dict:
+    return {col: str(dtype) for col, dtype in df.dtypes.to_dict().items()}
+
+
+def reduce_float(df: pd.DataFrame) -> pd.DataFrame:
+    start_mem = df.memory_usage(deep=True).sum() / 1024**2
+    print("Memory usage of dataframe is {:.2f} MB".format(start_mem))
+
+    c = df.select_dtypes(include=["float64", "float32"]).columns
+    df[c] = df[c].astype("float16")
+    end_mem = df.memory_usage(deep=True).sum() / 1024**2
+
+    print("Memory usage after optimization is: {:.2f} MB".format(end_mem))
+    print("Decreased by {:.1f}%".format(100 * (start_mem - end_mem) / start_mem))
+    return df
+
+
+def send_to_discord(webhook_url, message):
+    data = {"content": message}
+    response = requests.post(webhook_url, json=data)
+    if response.status_code == 204:
+        print("send: " & message)
+    else:
+        print(f"{response.status_code}, {response.text}")

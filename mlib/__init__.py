@@ -16,6 +16,9 @@ from .util.utility import (
     vis_func,
     vis_func_array,
     class_to_csv,
+    get_dtypes,
+    reduce_float,
+    send_to_discord,
     )
 from .util.proc_ml import (
     neutralize_series,
@@ -30,5 +33,5 @@ from .util.proc_ml import (
     quick_regressor,   
     vis_shap,
 )
-from .util.memory import variable_memory, reduce_mem_usage
+from .util.memory import reduce_mem_usage,variable_memory,deep_getsizeof
 from .util import interger, sort, sqls

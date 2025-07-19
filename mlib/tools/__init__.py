@@ -5,4 +5,6 @@ from . import (
     get_paper_attribute_GScholar,
     # pypdf_reduce_pdf_size,
     topix_weight,
+    decrypt_pdf,
+    merge_pdfs
 )
